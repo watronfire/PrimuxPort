@@ -8,8 +8,8 @@ class Primer( object ):
     ID = 0
 
     def __init__( self, sequence, occurrence, id ):
-        self.sequence = Seq( sequence )
-        self.Tm = mt.Tm_NN( self.sequence, nn_table=mt.DNA_NN4, Na=50, Mg=2.0, dNTPs=0.2  )
+        self.sequence = sequence
+        self.Tm = mt.Tm_NN( Seq( self.sequence ), nn_table=mt.DNA_NN4, Na=50, Mg=2.0, dNTPs=0.2  )
         self.occurrence = occurrence
         self.ID = id
 
