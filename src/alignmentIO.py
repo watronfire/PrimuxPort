@@ -47,7 +47,7 @@ class Alignment( object ) :
         print("{} kmers of {} removed by Tm requirements for sequence {}".format( len( self.kmers ) - len( filteredKmers ), len( self.kmers ), self.seqID ) )
         self.kmers = filteredKmers
 
-# Basic parser for alignment in a fasta format. Not particularly fast as kmers are determined and melting temperatures are calculated.
+# Basic parser for alignment in a fasta format.
 def parseAlignment( filePath ):
     count = 1
     returnList = list()
