@@ -54,56 +54,68 @@ def generateKmerTree( sequence ):
         kmerTree.append( [sequence[k:i+k] for k in range( len( sequence ) - i  + 1) ] )
     return kmerTree
 
-def optimizeCollapse( file ):
+def calculateDegeneracy( seqA, seqB ):
+    returnDegen = 1
+    for i in range( len( seqA ) ):
+        baseA = seqA[i]
+        baseB = seqB[i]
+        if baseA != baseB:
+            returnDegen *= len( set( IUPACExpandDict[baseA] ).union( set( IUPACExpandDict[baseB] ) ) )
+        elif baseA not in "ATCG":
+            returnDegen *= len( IUPACExpandDict[baseA] )
+    return returnDegen
+
+def mergeSequece( seqA, seqB ):
+    returnSeq = ""
+    for a, b in zip( seqA, seqB ):
+        returnSeq += AmbiqDict[a+b]
+    return returnSeq
+
+# Finds a pair of sequences such that occurance bonus is maximized and degeneracy cost is minimized.
+def optimizeCollapse( sequenceList ):
+
+    maxPair = 0,0
+    maxTC = 0
+
+    for i in range( len( sequenceList ) ):
+        for k in range( i, len( sequenceList ) ):
+            if i != k:
+
+                # Occurance bonus is the amount of sequences the kmer pair would bind to divided by the total number of
+                # sequences.
+                occuranceBonus = ( sequenceList[i][1] + sequenceList[k][1] ) / 66.0
+
+                # Degeneracy is the number of sequences which a degenerate sequence describes. A measure of entropy, essentially
+                degeneracy = calculateDegeneracy( sequenceList[i][0], sequenceList[k][0] )
+
+                # I don't like the variable name total cost but I don't have a better description. TODO: replace totalCost.
+                totalCost = occuranceBonus / degeneracy
+
+                # Find the maximum total cost of all combinations of kmers.
+                if totalCost > maxTC:
+                    maxTC = totalCost
+                    maxPair = i,k
+
+    return maxPair, maxTC
+
+with open( "/Users/natem/Documents/Code/Python/PriMuxPort/src/temp.txt", "r" ) as seqInput:
     seqList = list()
-    with open( file, "r" ) as inputSeqs:
-        for line in inputSeqs:
-            line = line.strip()
-            seqList.append( [line.split(",")[0], int(line.split(",")[1])] )
-    print("\t" + "\t\t".join( str(i) for i in range( len( seqList ) ) ) )
 
-    # Prints a occurrance bonus matrix. Essentially,
-    for i in range( len(seqList) ):
-        outputString = "{}\t".format( i )
-        for k in range(len( seqList ) ):
-            if i != k:
-                occuranceBonus = ( seqList[i][1] + seqList[k][1] ) / 66.0
-                outputString += "{:.2f}\t".format( occuranceBonus )
-            else:
-                outputString += "-\t\t"
-        print( outputString )
-    print("\n")
+    for line in seqInput:
+        lineSplit = line.strip().split(",")
+        seqList.append( [lineSplit[0], int(lineSplit[1])] )
 
-    # Prints the Degeneracy Matrix
-    print("\t" + "\t".join( str( i ) for i in range( len( seqList ) ) ))
-    for i in range( len( seqList ) ):
-        outputString = "{}\t".format( i )
-        for k in range( len( seqList ) ):
-            if i != k:
-                degeneracy = 0
-                for j in range( len( seqList[i][0] ) ):
-                    base1 = seqList[i][0][j]
-                    base2 = seqList[k][0][j]
-                    if base1 != base2:
-                        degeneracy += len( set( IUPACExpandDict[base1] ).union( IUPACExpandDict[base2] ) )
-                outputString += "{}\t".format( degeneracy )
-            else:
-                outputString += "-\t"
-        print( outputString )
-
-
-optimizeCollapse( "/Users/natem/Documents/Code/Python/PriMuxPort/src/temp.txt" )
+pairing, tc = optimizeCollapse( seqList )
+outputSeq = mergeSequece( seqList[pairing[0]][0], seqList[pairing[1]][0])
+print( seqList[pairing[0]][0] )
+print( seqList[pairing[1]][0] )
+print( outputSeq )
 
 #file = "/Users/natem/Documents/Sequences/LassaL_Sierra_Leone_Alignment.fasta"
 #lassaAlignment = alignmentIO.parseAlignment( file )
-
 #for thing in lassaAlignment:
 #    thing.filterKmers( 63, 67 )
-
 #totalKmers = collapseKmers( lassaAlignment )
-
-#print( totalKmers[120] )
-
-# Not quite a Kmer tree but generates all kmers and returns a lame dictionary-like list where the key is equal to k.
-# Ranges of kmers can then be extracted using typical means. kmerlist[kn:kn+] where kn+ in exclusive.
+#print( totalKmers[6031] )
+#kmerOutput( totalKmers  )
 

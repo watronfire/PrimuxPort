@@ -26,4 +26,5 @@ class Kmer( object ):
 
     def __repr__( self ):
         temperature = "{0:.2f}".format( self.primer.Tm )
-        return "{}, in {} sequences and at position {} of alignment. Tm: {}".format( self.sequence, len( self.seqLocation ), self.alignLocation, temperature )
+        #return "{}, in {} sequences and at position {} of alignment. Tm: {}".format( self.sequence, len( self.seqLocation ), self.alignLocation, temperature )
+        return "{},{}".format( self.sequence, len( self.seqLocation ) )
